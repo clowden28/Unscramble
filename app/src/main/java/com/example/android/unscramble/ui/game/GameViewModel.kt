@@ -25,6 +25,9 @@ class GameViewModel : ViewModel() {
     //Creates a new class variable to hold a list of words and avoid repetitions
     private var wordsList: MutableList<String> = mutableListOf()
     private lateinit var currentWord: String
+    private var _score = 0
+    val score: Int
+        get() = _score
 
     /**
      * Updates currentWord and currentScrambledWord with the next word.
