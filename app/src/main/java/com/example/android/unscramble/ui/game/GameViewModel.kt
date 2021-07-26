@@ -1,8 +1,12 @@
 package com.example.android.unscramble.ui.game
 
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.TtsSpan
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 //Adds a lateinit modifier to _currentScrambledWord
 private lateinit var _currentScrambledWord: String
@@ -12,7 +16,7 @@ private lateinit var _currentScrambledWord: String
 class GameViewModel : ViewModel() {
 
     private fun increaseScore(){
-        _score += SCORE_INCREASE
+        _score.value = (_score.value)?.plus(SCORE_INCREASE)
     }
     fun isUserWordCorrect(playerWord: String): Boolean {
         if (playerWord.equals(currentWord, true)) {
@@ -32,18 +36,32 @@ class GameViewModel : ViewModel() {
 
     }
     private var scpre = 0
-    private var _currentWordCount = 0
-    val currentWordCount: Int
+    private val _currentWordCount = MutableLiveData(0)
+    val currentWordCount: LiveData<Int>
         get() = _currentWordCount
-    //Creates a backing property for currentScrabmledWord
+
     private val _currentScrambledWord = MutableLiveData<String>()
-    val currentScrambledWord: LiveData<String>
-        get() = _currentScrambledWord
+    val currentScrambledWord: LiveData<Spannable> = Transformations.map(_currentScrambledWord) {
+        if (it == null) {
+            SpannableString("")
+        } else {
+            val scrambledWord = it.toString()
+            val spannable: Spannable = SpannableString(scrambledWord)
+            spannable.setSpan(
+                TtsSpan.VerbatimBuilder(scrambledWord).build(),
+                0,
+                scrambledWord.length,
+                Spannable.SPAN_INCLUSIVE_INCLUSIVE
+            )
+            spannable
+        }
+    }
+
     //Creates a new class variable to hold a list of words and avoid repetitions
     private var wordsList: MutableList<String> = mutableListOf()
     private lateinit var currentWord: String
-    private var _score = 0
-    val score: Int
+    private val _score = MutableLiveData(0)
+    val score: LiveData<Int>
         get() = _score
 
     /**
@@ -63,7 +81,7 @@ class GameViewModel : ViewModel() {
                 getNextWord()
             } else {
                 _currentScrambledWord.value = String(tempWord)
-                ++_currentWordCount
+                _currentWordCount.value = (_currentWordCount.value)?.inc()
                 wordsList.add(currentWord)
             }
 
@@ -79,7 +97,7 @@ class GameViewModel : ViewModel() {
     * Updates the next word.
     */
     fun nextWord(): Boolean {
-        return if (_currentWordCount < MAX_NO_OF_WORDS) {
+        return if (_currentWordCount.value!! < MAX_NO_OF_WORDS) {
             getNextWord()
             true
         }else false
@@ -88,9 +106,10 @@ class GameViewModel : ViewModel() {
 * Re-initializes the game data to restart the game.
 */
     fun reinitializeData() {
-        _score = 0
-        _currentWordCount = 0
+        _score.value = 0
+        _currentWordCount.value = 0
         wordsList.clear()
         getNextWord()
     }
+
 }
