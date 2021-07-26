@@ -24,7 +24,7 @@ class GameViewModel : ViewModel() {
     val currentScrambledWord: String
         get() = _currentScrambledWord
     //Creates a new class variable to hold a list of words and avoid repetitions
-    private var wordList: MutableList<String> = mutableListOf()
+    private var wordsList: MutableList<String> = mutableListOf()
     private lateinit var currentWord: String
     /*
      * Updates currentWord and currentScrambledWord with the next word.
@@ -35,17 +35,16 @@ class GameViewModel : ViewModel() {
         tempWord.shuffle()
 
         //while loop to continue until the scrabmled word is not the same as the original word
-        while (tempWord.toString().equals(currentWord, false)){
+        while (tempWord.toString().equals(currentWord, false)) {
             tempWord.shuffle()
-
+        }
         //if-else block to check if the word is already used
-            if (wordList.contains(currentWord)) {
+            if (wordsList.contains(currentWord)) {
                 getNextWord()
             } else {
                 _currentScrambledWord = String(tempWord)
                 ++currentWordCount
                 wordsList.add(currentWord)
-                }
-             }
-        }
+            }
     }
+}
